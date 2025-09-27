@@ -5,94 +5,131 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Spew13 — Gambling Room</title>
 <style>
-  :root{
-    --bg:#070707;
-    --panel:#121212;
-    --accent:#00ff88;
-    --muted:#9fbf9f;
-    --card-bg:#fff;
+  /* Matrix background */
+  html,body { height:100%; margin:0; font-family:Arial, sans-serif; background:#000; color:#e6ffe6; overflow:hidden; }
+  #matrixCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-2; display:block; }
+
+  /* Spew13 neon header + layout */
+  header {
+    background:#111;
+    border-bottom:4px solid limegreen;
+    color:limegreen;
+    padding:18px 22px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 8px 40px rgba(0,255,136,0.03);
+    position:relative;
+    z-index:10;
   }
-  html,body{height:100%;margin:0;background:radial-gradient(circle at 10% 10%, #07110a 0%, #050505 40%, #000 100%);font-family:Inter, system-ui, Arial, sans-serif;color:#eaf9ea;}
-  header{padding:18px 24px;background:#0b0b0b;border-bottom:3px solid rgba(0,255,136,0.08);display:flex;align-items:center;justify-content:space-between;gap:12px}
-  header h1{margin:0;font-size:1.25rem;color:var(--accent)}
-  .controls {display:flex;gap:10px;align-items:center;}
-  button{cursor:pointer}
-  .btn {background:#111;border:1px solid rgba(255,255,255,0.06);color:#fff;padding:8px 12px;border-radius:8px;}
-  .btn.primary{background:linear-gradient(180deg,#053d1d,#032b11);border:1px solid rgba(0,255,136,0.25);box-shadow:0 6px 20px rgba(0,255,136,0.04)}
-  .btn.warn{background:#331211;border:1px solid rgba(255,80,80,0.15)}
-  main{max-width:1080px;margin:28px auto;padding:0 18px;}
-  .top-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-  .balance{background:rgba(0,0,0,0.45);padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);font-weight:600}
-  .game-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
-  .panel{background:linear-gradient(180deg,#0f0f0f,#0b0b0b);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 10px 30px rgba(0,0,0,0.6)}
-  .panel h2{margin:0 0 8px;color:var(--accent)}
-  .muted{color:var(--muted);font-size:0.95rem}
-  .controls-row{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
-  input[type=number]{padding:8px;border-radius:8px;border:1px solid #333;background:#0b0b0b;color:#fff;width:100px}
-  .table{background:linear-gradient(90deg,#07210b,#061610);padding:12px;border-radius:10px;min-height:86px;color:#fff}
-  .card{display:inline-block;width:48px;height:72px;border-radius:6px;background:var(--card-bg);color:#000;text-align:center;line-height:72px;font-weight:700;margin-right:6px;box-shadow:0 6px 18px rgba(0,0,0,0.6)}
-  .poker-card{display:inline-block;width:56px;height:84px;border-radius:8px;background:var(--card-bg);color:#000;text-align:center;line-height:84px;font-weight:700;margin-right:8px;box-shadow:0 6px 18px rgba(0,0,0,0.6);cursor:pointer}
-  .poker-card.held{outline:3px solid rgba(0,255,136,0.25);background:#dfffd9}
-  .status{margin-left:8px;color:#dfe; font-weight:600}
-  footer{margin-top:24px;padding:18px;text-align:center;color:rgba(255,255,255,0.45);font-size:0.95rem}
-  .close-btn{background:#111;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:#fff}
-  @media (max-width:880px){ .game-grid{grid-template-columns:1fr} .card{width:40px;height:60px;line-height:60px} .poker-card{width:48px;height:72px;line-height:72px} }
+  header h1 { margin:0; font-size:1.4rem; letter-spacing:1px; }
+  .top-controls { display:flex; gap:10px; align-items:center; }
+
+  /* Main panel styling */
+  main { max-width:1100px; margin:26px auto; padding:0 20px 80px 20px; position:relative; z-index:5; }
+  .balance {
+    background:rgba(0,0,0,0.6);
+    border:2px solid rgba(0,255,136,0.12);
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:700;
+    color:limegreen;
+    box-shadow:0 6px 24px rgba(0,255,136,0.04);
+  }
+  .save-btn, .close-btn {
+    background:#0b0b0b;
+    color:white;
+    border:2px solid rgba(0,255,136,0.16);
+    padding:8px 12px;
+    border-radius:10px;
+    cursor:pointer;
+  }
+  .save-btn:hover, .close-btn:hover { transform:translateY(-2px); }
+
+  .muted { color:#9fbf9f; }
+
+  .game-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:22px; }
+  .panel {
+    background: linear-gradient(180deg,#0f0f0f,#0a0a0a);
+    border:2px solid rgba(0,255,136,0.06);
+    padding:16px;
+    border-radius:12px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.6);
+  }
+  .panel h2 { margin:0 0 8px 0; color:#bfffbe; }
+
+  .controls-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+  input[type=number] { padding:8px; border-radius:8px; background:#111; color:#fff; border:2px solid rgba(255,255,255,0.04); width:110px; }
+
+  .btn { background:limegreen; color:#0b0b0b; padding:9px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:700; }
+  .btn.small { padding:8px 10px; font-size:0.95rem; }
+  .btn.ghost { background:transparent; border:2px solid rgba(255,255,255,0.06); color:#fff; }
+
+  .table { background:linear-gradient(90deg,#08240a,#07110a); padding:12px; border-radius:8px; min-height:86px; color:#fff; margin-top:12px; }
+  .card { display:inline-block; width:48px; height:72px; line-height:72px; text-align:center; border-radius:6px; background:#fff; color:#000; font-weight:800; margin-right:8px; box-shadow:0 8px 18px rgba(0,0,0,0.6); }
+  .card.hidden { background:#222; color:#fff; }
+
+  .poker-card { display:inline-block; width:56px; height:84px; line-height:84px; text-align:center; border-radius:8px; background:#fff; color:#000; font-weight:800; margin-right:8px; box-shadow:0 8px 18px rgba(0,0,0,0.6); cursor:pointer; }
+  .poker-card.held { outline:3px solid rgba(0,255,136,0.25); background:#dfffd9; }
+  .status { margin-left:10px; color:#cfeecf; font-weight:700; }
+
+  footer { color:#9fbf9f; text-align:center; margin-top:28px; font-size:0.95rem; opacity:0.9; }
+
+  /* responsive */
+  @media (max-width:900px) { .game-grid{grid-template-columns:1fr} .card{width:40px;height:60px;line-height:60px} .poker-card{width:48px;height:72px;line-height:72px} }
+
 </style>
 </head>
 <body>
+  <canvas id="matrixCanvas"></canvas>
+
   <header>
-    <h1>Spew13 — Gambling Room</h1>
-    <div class="controls">
-      <div class="balance" id="balanceDisplay">Spew Coins: 0</div>
-      <button class="btn" id="saveBtn">Save</button>
-      <button class="btn" id="resetBtn" title="Reset local Spew Coins">Reset</button>
-      <button class="close-btn" id="closeBtn">Close</button>
+    <h1>Spew 13 — Gambling Room</h1>
+    <div class="top-controls">
+      <div id="balanceDisplay" class="balance">Spew Coins: 0</div>
+      <button id="saveBtn" class="save-btn">Save</button>
+      <button id="closeBtn" class="close-btn">Close</button>
     </div>
   </header>
 
   <main>
-    <div class="top-row">
-      <div>
-        <div class="muted">Welcome — virtual currency only. No real money.</div>
-        <div style="margin-top:6px;color:#cfeecf">Have fun and gamble responsibly.</div>
-      </div>
-      <div class="muted" style="text-align:right">Auto-save every 20s • Data stored in browser</div>
-    </div>
+    <div class="muted">Welcome — virtual currency only. No real money. The UI matches Spew13 neon/matrix theme.</div>
 
     <div class="game-grid">
-      <!-- BLACKJACK -->
-      <section class="panel" id="blackjackPanel">
-        <h2>Blackjack (simple)</h2>
+      <!-- Blackjack -->
+      <section class="panel">
+        <h2>Blackjack (Simple)</h2>
         <div class="muted">Bet amount</div>
         <div class="controls-row">
-          <input id="bjBet" type="number" value="10" min="1" />
-          <button class="btn primary" id="bjDeal">Deal</button>
-          <button class="btn" id="bjHit" disabled>Hit</button>
-          <button class="btn" id="bjStand" disabled>Stand</button>
+          <input id="bjBet" type="number" min="1" value="10" />
+          <button id="bjDeal" class="btn small">Deal</button>
+          <button id="bjHit" class="btn small" disabled>Hit</button>
+          <button id="bjStand" class="btn small" disabled>Stand</button>
           <div class="status" id="bjStatus">Ready</div>
         </div>
 
         <div style="margin-top:12px">
           <div class="muted">Player</div>
           <div id="bjPlayer" class="table"></div>
-          <div class="muted" style="margin-top:8px">Dealer</div>
+
+          <div class="muted" style="margin-top:10px">Dealer</div>
           <div id="bjDealer" class="table"></div>
         </div>
       </section>
 
-      <!-- POKER -->
-      <section class="panel" id="pokerPanel">
-        <h2>5-Card Draw Poker (simplified)</h2>
+      <!-- Poker -->
+      <section class="panel">
+        <h2>5-Card Draw Poker (Simplified)</h2>
         <div class="muted">Bet amount</div>
         <div class="controls-row">
-          <input id="pokerBet" type="number" value="10" min="1" />
-          <button class="btn primary" id="pokerDeal">Deal</button>
-          <button class="btn" id="pokerDraw" disabled>Draw (then resolve)</button>
+          <input id="pokerBet" type="number" min="1" value="10" />
+          <button id="pokerDeal" class="btn small">Deal</button>
+          <button id="pokerDraw" class="btn small" disabled>Draw</button>
           <div class="status" id="pokerStatus">Ready</div>
         </div>
 
         <div style="margin-top:12px">
-          <div class="muted">Your hand (click cards to hold/unhold)</div>
+          <div class="muted">Your hand (click cards to hold)</div>
           <div id="pokerPlayer" style="margin-top:10px"></div>
 
           <div class="muted" style="margin-top:12px">Dealer's hand</div>
@@ -105,7 +142,31 @@
   </main>
 
 <script>
-/* ----------------- Spew Coins (triple Base64) ----------------- */
+/* ---------------- Matrix background (same feel as Spew13) ---------------- */
+const canvas = document.getElementById('matrixCanvas');
+const ctx = canvas.getContext('2d');
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; columns = Math.floor(canvas.width / fontSize); drops = new Array(columns).fill(0); }
+const letters = "01";
+const fontSize = 18;
+let columns = Math.floor(window.innerWidth / fontSize);
+let drops = new Array(columns).fill(0);
+resize();
+window.addEventListener('resize', resize);
+function draw(){
+  ctx.fillStyle = "rgba(0,0,0,0.08)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "#32CD32";
+  ctx.font = fontSize + "px monospace";
+  for(let i=0;i<drops.length;i++){
+    const text = letters.charAt(Math.floor(Math.random()*letters.length));
+    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+    drops[i]++;
+    if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+  }
+}
+setInterval(draw, 80);
+
+/* ---------------- Spew Coins (triple Base64 storage) ---------------- */
 const STORAGE_KEY = 'spewCoins_v1';
 let spewCoins = 0;
 
@@ -115,283 +176,201 @@ function encodeTriple(obj){
   return s;
 }
 function decodeTriple(s){
-  try{
-    for(let i=0;i<3;i++) s = atob(s);
-    return JSON.parse(s);
-  }catch(e){
-    console.warn('decode failed',e);
-    return {amount:0};
-  }
+  try{ for(let i=0;i<3;i++) s = atob(s); return JSON.parse(s); }
+  catch(e){ console.warn('decode fail', e); return { amount: 0 }; }
 }
 
-function saveSpew(){
-  try {
-    localStorage.setItem(STORAGE_KEY, encodeTriple({ amount: spewCoins }));
-    flashSave();
-  } catch(e) { console.warn('save error', e); }
-  updateBalance();
-}
+function saveSpew(){ try { localStorage.setItem(STORAGE_KEY, encodeTriple({ amount: spewCoins })); flashSave(); } catch(e) { console.warn(e); } updateBalance(); }
 function loadSpew(){
   const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw){
-    spewCoins = 100; // seed for new users
-    saveSpew();
-    return;
-  }
-  const obj = decodeTriple(raw);
-  spewCoins = obj.amount || 0;
-  updateBalance();
+  if(!raw){ spewCoins = 100; saveSpew(); return; }
+  const obj = decodeTriple(raw); spewCoins = obj.amount || 0; updateBalance();
 }
-function updateBalance(){
-  const el = document.getElementById('balanceDisplay');
-  if(el) el.textContent = `Spew Coins: ${spewCoins}`;
-}
-function changeCoins(delta){
-  spewCoins = Math.max(0, Math.floor(spewCoins + delta));
-  updateBalance();
-}
+function updateBalance(){ const el = document.getElementById('balanceDisplay'); if(el) el.textContent = `Spew Coins: ${spewCoins}`; }
+function changeCoins(delta){ spewCoins = Math.max(0, Math.floor(spewCoins + delta)); updateBalance(); }
 
 function flashSave(){
   const btn = document.getElementById('saveBtn');
-  const orig = btn.style.background;
-  btn.style.background = 'linear-gradient(90deg,#0a3,#063)';
-  setTimeout(()=> btn.style.background = orig, 400);
+  btn.style.transform = 'translateY(-2px)';
+  setTimeout(()=> btn.style.transform = '', 300);
 }
-
 document.getElementById('saveBtn').addEventListener('click', saveSpew);
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(confirm('Reset Spew Coins to default (100)?')) {
-    spewCoins = 100;
-    saveSpew();
-    updateBalance();
-  }
-});
 
 /* auto-save */
-setInterval(()=> saveSpew(), 20000);
+setInterval(() => saveSpew(), 20000);
 
-/* ----------------- Messaging to parent ----------------- */
-document.getElementById('closeBtn').addEventListener('click', ()=>{
-  // send postMessage to parent to close iframe overlay if parent listens
-  try {
-    parent.postMessage({ type:'closeGambling' }, '*');
-  } catch(e){ /* ignore cross-domain */ }
-  // if not in iframe, just hide entire document body
-  if(window.self === window.top){
-    document.body.style.display = 'none';
-  }
+/* send message to parent on close */
+document.getElementById('closeBtn').addEventListener('click', ()=> {
+  try { parent.postMessage({ type: 'closeGambling' }, '*'); } catch(e) {}
+  if(window.self === window.top) window.close?.();
 });
 
-/* Also listen for messages (optional): set coins from parent */
-window.addEventListener('message', (ev)=>{
-  if(!ev.data) return;
-  if(ev.data.type === 'setSpewCoins' && typeof ev.data.amount === 'number'){
-    spewCoins = Math.max(0, Math.floor(ev.data.amount));
-    saveSpew();
-    updateBalance();
-  }
-});
-
-/* ----------------- Utility: deck functions ----------------- */
+/* ---------------- Helper: deck functions ---------------- */
 const SUITS = ['♠','♥','♦','♣'];
 const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+function newDeck(){ const d=[]; for(const s of SUITS) for(const r of RANKS) d.push({r,s}); for(let i=d.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [d[i], d[j]] = [d[j], d[i]]; } return d; }
+function valueBJ(r){ if(r==='A') return 11; if(['J','Q','K'].includes(r)) return 10; return parseInt(r,10); }
+function scoreBJ(cards){ let total=0, aces=0; for(const c of cards){ total += valueBJ(c.r); if(c.r==='A') aces++; } while(total>21 && aces>0){ total -= 10; aces--; } return total; }
 
-function newDeck(){
-  const deck = [];
-  for(const s of SUITS) for(const r of RANKS) deck.push({r,s});
-  // fisher-yates shuffle
-  for(let i=deck.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-  return deck;
-}
-function cardValueForBlackjack(r){
-  if(r==='A') return 11;
-  if(['J','Q','K'].includes(r)) return 10;
-  return parseInt(r,10);
-}
-function scoreBJ(cards){
-  let total=0, aces=0;
-  for(const c of cards){
-    total += cardValueForBlackjack(c.r);
-    if(c.r === 'A') aces++;
-  }
-  while(total>21 && aces>0){ total -= 10; aces--; }
-  return total;
-}
-
-/* ----------------- Blackjack logic ----------------- */
+/* ---------------- Blackjack (fixed payouts) ---------------- */
 (function(){
-  const playerDiv = document.getElementById('bjPlayer');
-  const dealerDiv = document.getElementById('bjDealer');
-  const status = document.getElementById('bjStatus');
+  const playerEl = document.getElementById('bjPlayer');
+  const dealerEl = document.getElementById('bjDealer');
+  const statusEl = document.getElementById('bjStatus');
   const betInput = document.getElementById('bjBet');
-  const btnDeal = document.getElementById('bjDeal');
-  const btnHit = document.getElementById('bjHit');
-  const btnStand = document.getElementById('bjStand');
+  const dealBtn = document.getElementById('bjDeal');
+  const hitBtn = document.getElementById('bjHit');
+  const standBtn = document.getElementById('bjStand');
 
-  let deck = [], playerHand = [], dealerHand = [], currentBet = 0, roundActive = false;
+  let deck = [], player = [], dealer = [], currentBet = 0, roundActive = false;
 
-  function renderCards(container, cards, hideFirst=false){
+  function render(container, cards, hideFirst=false){
     container.innerHTML = '';
-    for(let i=0;i<cards.length;i++){
-      const c = cards[i];
-      const el = document.createElement('div');
-      el.className = 'card';
-      if(hideFirst && i===0){
-        el.textContent = '🂠';
-        el.style.background = '#303030';
-        el.style.color = '#fff';
-      } else {
-        el.textContent = c.r + c.s;
-        el.style.background = '#fff';
-        el.style.color = (c.s==='♥' || c.s==='♦') ? '#b00' : '#000';
+    cards.forEach((c,i)=> {
+      const d = document.createElement('div');
+      d.className = 'card' + (hideFirst && i===0 ? ' hidden' : '');
+      if(hideFirst && i===0) d.textContent = '🂠';
+      else d.textContent = c.r + c.s;
+      if(!d.classList.contains('hidden')) {
+        if(c.s === '♥' || c.s === '♦') d.style.color = '#b00';
+        else d.style.color = '#000';
       }
-      container.appendChild(el);
-    }
+      container.appendChild(d);
+    });
   }
 
-  function endRound(message, netChange){
+  function endRound(message, payoutMultiplier=0){
+    // RoundActive ends, payoutMultiplier indicates how much to add relative to bet:
+    // payoutMultiplier === 0: player already lost (bet already removed)
+    // payoutMultiplier === 1: return bet (push) -> add back bet
+    // payoutMultiplier === 2: win (player gets 2x bet back: return bet + winnings = bet*2)
+    // payoutMultiplier === 2.5: blackjack (return bet + 1.5*bet)
     roundActive = false;
-    btnHit.disabled = true;
-    btnStand.disabled = true;
-    btnDeal.disabled = false;
-    if(netChange !== 0) changeCoins(netChange);
-    status.textContent = message;
+    hitBtn.disabled = true; standBtn.disabled = true; dealBtn.disabled = false;
+    if(payoutMultiplier > 0 && currentBet > 0){
+      const pay = Math.floor(currentBet * payoutMultiplier);
+      changeCoins(pay);
+      statusEl.textContent = `${message} — you received ${pay} Spew Coins.`;
+    } else {
+      statusEl.textContent = message;
+    }
   }
 
-  function dealerPlayAndResolve(){
-    // reveal dealer, hit to 17+
-    renderCards(dealerDiv, dealerHand, false);
-    let ds = scoreBJ(dealerHand);
+  function dealerPlayResolve(){
+    render(dealerEl, dealer, false);
+    let ds = scoreBJ(dealer);
     while(ds < 17){
-      dealerHand.push(deck.pop()); ds = scoreBJ(dealerHand);
+      dealer.push(deck.pop());
+      ds = scoreBJ(dealer);
     }
-    const ps = scoreBJ(playerHand);
-    // outcomes
+    const ps = scoreBJ(player);
     if(ps > 21){
-      endRound('You busted — lose', 0); // bet already removed
+      endRound('You busted — dealer wins', 0);
     } else if(ds > 21 || ps > ds){
-      // player wins: pay 1x bet (net +bet)
-      endRound('You win!', currentBet);
+      // player wins: payoutMultiplier = 2 -> add 2*bet (i.e. return bet + equal winnings)
+      endRound('You win!', 2);
     } else if(ps === ds){
-      // push: return bet
-      endRound('Push (tie)', 0 + currentBet); // return bet
+      // push: return bet only
+      endRound('Push — tie', 1);
     } else {
       endRound('Dealer wins', 0);
     }
   }
 
-  btnDeal.addEventListener('click', ()=>{
+  dealBtn.addEventListener('click', ()=>{
     if(roundActive) return;
     const bet = Math.max(1, Math.floor(Number(betInput.value) || 0));
-    if(bet > spewCoins){
-      status.textContent = 'Not enough Spew Coins.';
-      return;
-    }
+    if(bet > spewCoins){ statusEl.textContent = 'Not enough Spew Coins.'; return; }
     currentBet = bet;
     // deduct bet upfront
     changeCoins(-currentBet);
 
     deck = newDeck();
-    playerHand = [deck.pop(), deck.pop()];
-    dealerHand = [deck.pop(), deck.pop()];
+    player = [deck.pop(), deck.pop()];
+    dealer = [deck.pop(), deck.pop()];
     roundActive = true;
-    btnDeal.disabled = true;
-    btnHit.disabled = false;
-    btnStand.disabled = false;
-    renderCards(playerDiv, playerHand, false);
-    renderCards(dealerDiv, dealerHand, true);
-    const ps = scoreBJ(playerHand);
+    dealBtn.disabled = true;
+    hitBtn.disabled = false;
+    standBtn.disabled = false;
+    render(playerEl, player, false);
+    render(dealerEl, dealer, true);
+    const ps = scoreBJ(player);
     if(ps === 21){
-      // blackjack: pay 1.5x (rounded down)
-      const bonus = Math.floor(currentBet * 1.5);
-      changeCoins(currentBet + bonus);
-      renderCards(dealerDiv, dealerHand, false);
-      endRound('Blackjack! You win.', currentBet + bonus);
+      // Blackjack: payout multiplier 2.5 (return bet + 1.5*bet)
+      render(dealerEl, dealer, false);
+      endRound('Blackjack! You win big.', 2.5);
     } else {
-      status.textContent = 'Your move';
+      statusEl.textContent = 'Your move';
     }
   });
 
-  btnHit.addEventListener('click', ()=>{
+  hitBtn.addEventListener('click', ()=>{
     if(!roundActive) return;
-    playerHand.push(deck.pop());
-    renderCards(playerDiv, playerHand, false);
-    const ps = scoreBJ(playerHand);
+    player.push(deck.pop());
+    render(playerEl, player, false);
+    const ps = scoreBJ(player);
     if(ps > 21){
-      renderCards(dealerDiv, dealerHand, false);
+      render(dealerEl, dealer, false);
       endRound('Bust — you lose', 0);
-    } else status.textContent = 'Your move';
+    } else statusEl.textContent = 'Your move';
   });
 
-  btnStand.addEventListener('click', ()=>{
+  standBtn.addEventListener('click', ()=>{
     if(!roundActive) return;
-    btnHit.disabled = true;
-    btnStand.disabled = true;
-    dealerPlayAndResolve();
+    hitBtn.disabled = true; standBtn.disabled = true;
+    dealerPlayResolve();
   });
 
-  // initial render
-  renderCards(playerDiv, []);
-  renderCards(dealerDiv, []);
+  // initialize
+  render(playerEl, []); render(dealerEl, []);
+  statusEl.textContent = 'Ready';
 })();
 
-/* ----------------- Poker (5-card draw) ----------------- */
+/* ---------------- Poker (5-card draw, unchanged logic) ---------------- */
 (function(){
   const playerDiv = document.getElementById('pokerPlayer');
   const dealerDiv = document.getElementById('pokerDealer');
-  const btnDeal = document.getElementById('pokerDeal');
-  const btnDraw = document.getElementById('pokerDraw');
+  const dealBtn = document.getElementById('pokerDeal');
+  const drawBtn = document.getElementById('pokerDraw');
   const status = document.getElementById('pokerStatus');
   const betInput = document.getElementById('pokerBet');
 
-  const RANK_ORDER = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+  const ORDER = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 
-  function makeDeck(){ // shuffled
-    const deck = [];
-    for(const s of SUITS) for(const r of RANKS) deck.push({r,s});
-    for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
-    return deck;
+  function makeDeck(){
+    const d = []; for(const s of SUITS) for(const r of RANKS) d.push({r,s});
+    for(let i=d.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [d[i],d[j]]=[d[j],d[i]]; }
+    return d;
   }
-
   function label(c){ return c.r + c.s; }
 
-  function evaluateHand(cards){
-    // returns [rankScore, tiebreakerArray]
-    // rankScore: 8 straight flush, 7 four, 6 full house, 5 flush, 4 straight, 3 three, 2 two-pair,1 pair,0 high
-    const counts = {};
-    const suits = {};
-    const vals = cards.map(c=>RANK_ORDER.indexOf(c.r)).sort((a,b)=>a-b);
+  function evaluate(cards){
+    // returns [rank, tieArray] similar to earlier
+    const counts = {}; const suits = {};
+    const vals = cards.map(c => ORDER.indexOf(c.r)).sort((a,b)=>a-b);
     cards.forEach(c=>{ counts[c.r]=(counts[c.r]||0)+1; suits[c.s]=(suits[c.s]||0)+1; });
     const isFlush = Object.values(suits).some(v=>v===5);
-    // straight check
-    let isStraight=false;
-    let consecutive=true;
-    for(let i=1;i<vals.length;i++){ if(vals[i]!==vals[i-1]+1){ consecutive=false; break; } }
-    if(consecutive) isStraight=true;
-    // A-2-3-4-5 low straight
+    let straight = true;
+    for(let i=1;i<vals.length;i++) if(vals[i] !== vals[i-1]+1) { straight = false; break; }
+    // A-low straight
     const aceLow = [0,1,2,3,12];
-    if(vals.join(',') === aceLow.join(',')) isStraight=true;
-
+    if(vals.join(',') === aceLow.join(',')) straight = true;
     const groups = Object.values(counts).sort((a,b)=>b-a);
-    const rankEntries = Object.entries(counts).map(([r,c])=>({r,c,v:RANK_ORDER.indexOf(r)}));
-    rankEntries.sort((a,b)=> (b.c - a.c) || (b.v - a.v));
-    const tie = rankEntries.map(e=>e.v);
-
-    if(isStraight && isFlush) return [8,tie];
+    const entries = Object.entries(counts).map(([r,c])=>({r,c,v:ORDER.indexOf(r)}));
+    entries.sort((a,b)=> (b.c - a.c) || (b.v - a.v) );
+    const tie = entries.map(e=>e.v);
+    if(straight && isFlush) return [8,tie];
     if(groups[0]===4) return [7,tie];
     if(groups[0]===3 && groups[1]===2) return [6,tie];
     if(isFlush) return [5,tie];
-    if(isStraight) return [4,tie];
+    if(straight) return [4,tie];
     if(groups[0]===3) return [3,tie];
     if(groups[0]===2 && groups[1]===2) return [2,tie];
     if(groups[0]===2) return [1,tie];
     return [0,tie];
   }
 
-  function compareEval(a,b){
+  function compare(a,b){
     if(a[0] !== b[0]) return a[0] - b[0];
     const ta = a[1], tb = b[1];
     for(let i=0;i<Math.max(ta.length,tb.length);i++){
@@ -401,70 +380,65 @@ function scoreBJ(cards){
     return 0;
   }
 
-  let deck=[], playerHand=[], dealerHand=[], holds=[false,false,false,false,false], roundActive=false, redrawUsed=false, currentBet=0;
+  let deck=[], ph=[], dh=[], holds=[false,false,false,false,false], round=false, usedRedraw=false, currentBet=0;
 
   function renderHands(hideDealer=true){
     playerDiv.innerHTML = '';
-    playerHand.forEach((c,i)=>{
-      const el = document.createElement('div');
-      el.className = 'poker-card' + (holds[i] ? ' held' : '');
-      el.textContent = label(c);
-      el.addEventListener('click', ()=> {
-        if(!roundActive || redrawUsed) return;
+    ph.forEach((c,i)=> {
+      const e = document.createElement('div');
+      e.className = 'poker-card' + (holds[i] ? ' held' : '');
+      e.textContent = label(c);
+      e.addEventListener('click', ()=> {
+        if(!round || usedRedraw) return;
         holds[i] = !holds[i]; renderHands(hideDealer);
       });
-      playerDiv.appendChild(el);
+      playerDiv.appendChild(e);
     });
     dealerDiv.innerHTML = '';
-    dealerHand.forEach((c)=>{
-      const el = document.createElement('div');
-      el.className = 'poker-card';
-      if(hideDealer){ el.textContent = '🂠'; el.style.background = '#333'; el.style.color='#fff'; }
-      else el.textContent = label(c);
-      dealerDiv.appendChild(el);
+    dh.forEach(c => {
+      const e = document.createElement('div');
+      e.className = 'poker-card';
+      if(hideDealer){ e.textContent = '🂠'; e.style.background = '#333'; e.style.color = '#fff'; }
+      else e.textContent = label(c);
+      dealerDiv.appendChild(e);
     });
   }
 
-  btnDeal.addEventListener('click', ()=>{
-    if(roundActive) return;
+  dealBtn.addEventListener('click', ()=> {
+    if(round) return;
     const bet = Math.max(1, Math.floor(Number(betInput.value) || 0));
     if(bet > spewCoins){ status.textContent = 'Not enough Spew Coins.'; return; }
-    currentBet = bet;
-    changeCoins(-currentBet); // deduct upfront
-    deck = makeDeck(); playerHand = [deck.pop(),deck.pop(),deck.pop(),deck.pop(),deck.pop()];
-    dealerHand = [deck.pop(),deck.pop(),deck.pop(),deck.pop(),deck.pop()];
-    holds = [false,false,false,false,false];
-    roundActive = true; redrawUsed = false;
-    btnDraw.disabled = false; btnDeal.disabled = true;
-    status.textContent = 'Select cards to hold (click) then Draw';
+    currentBet = bet; changeCoins(-currentBet);
+    deck = makeDeck(); ph = [deck.pop(),deck.pop(),deck.pop(),deck.pop(),deck.pop()];
+    dh = [deck.pop(),deck.pop(),deck.pop(),deck.pop(),deck.pop()];
+    holds = [false,false,false,false,false]; round = true; usedRedraw = false;
+    drawBtn.disabled = false; dealBtn.disabled = true;
+    status.textContent = 'Hold cards by clicking, then Draw';
     renderHands(true);
   });
 
-  btnDraw.addEventListener('click', ()=>{
-    if(!roundActive || redrawUsed) return;
-    // replace non-held
-    for(let i=0;i<5;i++) if(!holds[i]) playerHand[i] = deck.pop();
-    redrawUsed = true;
-    // reveal dealer and evaluate
+  drawBtn.addEventListener('click', ()=> {
+    if(!round || usedRedraw) return;
+    for(let i=0;i<5;i++) if(!holds[i]) ph[i] = deck.pop();
+    usedRedraw = true;
     renderHands(false);
-    const pEval = evaluateHand(playerHand);
-    const dEval = evaluateHand(dealerHand);
-    const cmp = compareEval(pEval, dEval);
-    // simple payouts: win => +bet, push => return bet, lose => nothing
+    const pEval = evaluate(ph);
+    const dEval = evaluate(dh);
+    const cmp = compare(pEval, dEval);
     if(cmp > 0){
-      changeCoins(currentBet * 2); // return bet + win = net +bet
-      status.textContent = 'You win! ' + handName(pEval[0]);
+      // win -> pay 2x bet back (return bet+win)
+      changeCoins(currentBet * 2);
+      status.textContent = 'You win — ' + handName(pEval[0]);
     } else if(cmp === 0){
-      changeCoins(currentBet); // return bet
-      status.textContent = 'Push (tie). ' + handName(pEval[0]);
+      changeCoins(currentBet); status.textContent = 'Push — tie';
     } else {
-      status.textContent = 'You lose. ' + handName(dEval[0]);
+      status.textContent = 'Dealer wins — ' + handName(dEval[0]);
     }
-    roundActive = false; btnDeal.disabled = false; btnDraw.disabled = true;
+    round = false; drawBtn.disabled = true; dealBtn.disabled = false;
   });
 
-  function handName(score){
-    switch(score){
+  function handName(s){
+    switch(s){
       case 8: return 'Straight Flush';
       case 7: return 'Four of a Kind';
       case 6: return 'Full House';
@@ -477,13 +451,13 @@ function scoreBJ(cards){
     }
   }
 
-  // initial render
-  playerDiv.innerHTML = ''; dealerDiv.innerHTML = ''; btnDraw.disabled = true;
+  // initial
+  playerDiv.innerHTML = ''; dealerDiv.innerHTML = ''; drawBtn.disabled = true;
 })();
 
-/* ----------------- Init load ----------------- */
-loadSpew();
-updateBalance();
+/* ---------------- Init ---------------- */
+loadSpew(); updateBalance();
+
 </script>
 </body>
 </html>
