@@ -85,11 +85,18 @@
 
   <header>
     <h1>Gambling Room</h1>
-    <div class="top-controls">
-      <div id="balanceDisplay" class="balance">Spews: 0</div>
-      <button id="saveBtn" class="save-btn">Save</button>
-      <button id="closeBtn" class="close-btn">Close</button>
-    </div>
+   <div class="top-controls">
+  <div id="balanceDisplay" class="balance">Spews: 0</div>
+  <button id="saveBtn" class="save-btn">Save</button>
+  <button id="closeBtn" class="close-btn">Close</button>
+</div>
+
+<script>
+  document.getElementById("closeBtn").addEventListener("click", function() {
+    location.reload(); // Reloads the current page
+  });
+</script>
+
   </header>
 
   <main>
