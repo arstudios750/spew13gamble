@@ -88,7 +88,56 @@
    <div class="top-controls">
   <div id="balanceDisplay" class="balance">Spews: 0</div>
   <button id="saveBtn" class="save-btn">Save</button>
-  <button id="closeBtn" class="close-btn">Close</button>
+<button id="loadBtn" class="load-btn">Load</button>
+
+<script>
+  const saveBtn = document.getElementById('saveBtn');
+  const loadBtn = document.getElementById('loadBtn');
+
+  // Example: some data to save
+  function getSiteState() {
+    // Collect any state you want to save
+    // Example: text content, input values, or even innerHTML
+    return {
+      bodyContent: document.body.innerHTML
+    };
+  }
+
+  function setSiteState(state) {
+    // Restore the saved state
+    document.body.innerHTML = state.bodyContent;
+  }
+
+  // Save site state to localStorage
+  saveBtn.addEventListener('click', () => {
+    const state = getSiteState();
+    localStorage.setItem('spew13State', JSON.stringify(state));
+    alert('Site saved!');
+  });
+
+  // Load site state from localStorage
+  loadBtn.addEventListener('click', () => {
+    const savedState = JSON.parse(localStorage.getItem('spew13State'));
+    if (savedState) {
+      setSiteState(savedState);
+      alert('Site loaded!');
+    } else {
+      alert('No saved data found.');
+    }
+  });
+</script>
+
+ <button id="closeBtn" class="close-btn">Close</button>
+
+<script>
+  const closeBtn = document.getElementById('closeBtn');
+
+  closeBtn.addEventListener('click', () => {
+    // Reloads the page, essentially resetting everything
+    location.reload();
+  });
+</script>
+
 </div>
 
 <script>
