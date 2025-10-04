@@ -129,14 +129,61 @@
 
  <button id="closeBtn" class="close-btn">Close</button>
 
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Resetting...</p>
+</div>
+
+<style>
+  /* Overlay styles */
+  #loadingOverlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    font-size: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  /* Spinner styles */
+  .spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid #fff;
+    border-top: 6px solid #0f0; /* lime-green accent */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+
 <script>
   const closeBtn = document.getElementById('closeBtn');
+  const loadingOverlay = document.getElementById('loadingOverlay');
 
   closeBtn.addEventListener('click', () => {
-    // Reloads the page, essentially resetting everything
-    location.reload();
+    // Show overlay
+    loadingOverlay.style.display = 'flex';
+
+    // Wait a bit for the animation to show
+    setTimeout(() => {
+      location.reload();
+    }, 1200); // 1.2 seconds
   });
 </script>
+
 
 </div>
 
