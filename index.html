@@ -174,25 +174,24 @@
   const loadingOverlay = document.getElementById('loadingOverlay');
 
   closeBtn.addEventListener('click', () => {
-    // Show overlay
-    loadingOverlay.style.display = 'flex';
+  // Show overlay
+  loadingOverlay.style.display = 'flex';
 
-    // Wait a bit for the animation to show
-    setTimeout(() => {
-      location.reload();
-    }, 1200); // 1.2 seconds
-  });
+  // Send message to parent to close/remove iframe
+  try { 
+    parent.postMessage({ type: 'closeGambling' }, '*'); 
+  } catch(e) {}
+
+  // Hide overlay after short delay so it never freezes
+  setTimeout(() => {
+    loadingOverlay.style.display = 'none';
+  }, 1200);
+});
+
 </script>
 
 
 </div>
-
-<script>
-  document.getElementById("closeBtn").addEventListener("click", function() {
-    location.reload(); // Reloads the current page
-  });
-</script>
-
   </header>
 
   <main>
@@ -305,7 +304,6 @@ setInterval(() => saveSpew(), 20000);
 /* send message to parent on close */
 document.getElementById('closeBtn').addEventListener('click', ()=> {
   try { parent.postMessage({ type: 'closeGambling' }, '*'); } catch(e) {}
-  if(window.self === window.top) window.close?.();
 });
 
 /* ---------------- Helper: deck functions ---------------- */
