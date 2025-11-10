@@ -243,6 +243,32 @@ function loadSpew(){
   if(!raw){ spewCoins = 100; saveSpew(); return; }
   const obj = decodeTriple(raw); spewCoins = obj.amount || 0; updateBalance();
 }
+  /* ---------------- Weekly Bonus ---------------- */
+
+// CHANGE THIS DATE RANGE:
+const BONUS_START = new Date("2025-11-10");  
+const BONUS_END   = new Date("2025-11-17");   // 1 week later
+
+function giveWeeklyBonus() {
+  const now = new Date();
+
+  // Only give bonus during event week
+  if (now < BONUS_START || now > BONUS_END) return;
+
+  const claimed = localStorage.getItem("spewBonusClaimed");
+
+  if (!claimed) {
+    // Give 100 coins
+    spewCoins += 100;
+    saveSpew();
+
+    // Mark as claimed so user can't claim twice
+    localStorage.setItem("spewBonusClaimed", now.toISOString());
+
+    alert("✅ You received your free 100 Spew Coins event bonus!");
+  }
+}
+
 function updateBalance(){ const el = document.getElementById('balanceDisplay'); if(el) el.textContent = `Spew Coins: ${spewCoins}`; }
 function changeCoins(delta){ spewCoins = Math.max(0, Math.floor(spewCoins + delta)); updateBalance(); }
 
@@ -507,7 +533,7 @@ function scoreBJ(cards){ let total=0, aces=0; for(const c of cards){ total += va
 })();
 
 /* ---------------- Init ---------------- */
-loadSpew(); updateBalance();
+loadSpew(); giveWeeklyBonus();  updateBalance();
 
 </script>
 </body>
