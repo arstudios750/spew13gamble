@@ -89,6 +89,11 @@
   <div id="balanceDisplay" class="balance">Spews: 0</div>
   <button id="saveBtn" class="save-btn">Save</button>
 <button id="loadBtn" class="load-btn">Load</button>
+     <div class="controls-row" style="margin-top:12px;">
+  <input id="codeInput" type="text" placeholder="Enter code" />
+  <button onclick="redeemCode(document.getElementById('codeInput').value)" class="btn small">Redeem</button>
+</div>
+
 
 <script>
   const saveBtn = document.getElementById('saveBtn');
@@ -266,6 +271,39 @@ function giveWeeklyBonus() {
     localStorage.setItem("spewBonusClaimed", now.toISOString());
 
     alert("✅ You received your free 100 Spew Coins event bonus!");
+  }
+}
+/* ---------------- Code Redeem System ---------------- */
+const codes = {
+  "CHILLGUY100": 50,
+  "SPEW13": 130,
+  "NERDY25": 25
+};
+
+// Used codes are stored per device
+const USED_CODES_KEY = "spewUsedCodes";
+let usedCodes = JSON.parse(localStorage.getItem(USED_CODES_KEY)) || [];
+
+function redeemCode(code) {
+  code = code.toUpperCase().trim();
+
+  if (usedCodes.includes(code)) {
+    alert("❌ You have already redeemed this code!");
+    return;
+  }
+
+  if (codes[code]) {
+    const amount = codes[code];
+    spewCoins += amount;
+    updateBalance();
+    saveSpew();
+
+    usedCodes.push(code);
+    localStorage.setItem(USED_CODES_KEY, JSON.stringify(usedCodes));
+
+    alert(`✅ Code accepted! You received ${amount} Spew Coins.`);
+  } else {
+    alert("❌ Invalid code.");
   }
 }
 
